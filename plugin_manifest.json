@@ -2,9 +2,7 @@
     "api": {
         "require_startup_execution": false,
         "class_name": "SMaxFirebaseAnalytics",
-        "modules": [
-          "SMaxFirebaseAnalytics"
-        ]
+        "modules": []
     },
     "dependency_repository_url": [
         "https://github.com/Digicel-Sportsmax/SMaxFirebaseAnalytics.git"
@@ -37,5 +35,5 @@
       "default": 1,
       "tooltip_text": "Sends any user data collected in the app. Per Google&apos;s policies, we will not send any user data identified as PII (Personally Identifiable Information)."
     }
-  ],
+  ]
 }
