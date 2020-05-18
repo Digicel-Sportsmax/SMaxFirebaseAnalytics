@@ -1,8 +1,8 @@
 Pod::Spec.new do |s|
-    s.name                = 'SMaxTermsAndConditionsPlugin'
+    s.name                = 'SMaxFirebaseAnalaytics'
     s.version             = '0.0.1'
-    s.summary             = 'SportsMax Terms and Condition Screen'
-    s.description         = 'SportsMax Terms and Condition Screen'
+    s.summary             = "[SportsMax]: Google's free, deep, and broadly integrated analytics system designed specifically for mobile."
+    s.description         = "[SportsMax]: Google's free, deep, and broadly integrated analytics system designed specifically for mobile."
     s.homepage            = 'https://github.com/Digicel-Sportsmax/SMaxFirebaseAnalytics.git'
     s.license             = 'MIT'
     s.author              = { "Mohieddine Zarif" => "mohieddine.zarif@gotocme.com" }
