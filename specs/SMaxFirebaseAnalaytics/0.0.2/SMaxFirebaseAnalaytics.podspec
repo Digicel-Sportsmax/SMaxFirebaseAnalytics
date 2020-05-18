@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name                = 'SMaxFirebaseAnalaytics'
-    s.version             = '0.0.1'
+    s.version             = '0.0.2'
     s.summary             = "[SportsMax]: Google's free, deep, and broadly integrated analytics system designed specifically for mobile."
     s.description         = "[SportsMax]: Google's free, deep, and broadly integrated analytics system designed specifically for mobile."
     s.homepage            = 'https://github.com/Digicel-Sportsmax/SMaxFirebaseAnalytics.git'
