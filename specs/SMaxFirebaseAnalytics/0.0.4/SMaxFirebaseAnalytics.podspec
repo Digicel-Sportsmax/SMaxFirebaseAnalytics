@@ -1,32 +1,28 @@
 Pod::Spec.new do |s|
-    s.name                = 'SMaxFirebaseAnalytics'
-    s.version             = '0.0.4'
-    s.summary             = '[SportsMax]: Google free, deep, and broadly integrated analytics system designed specifically for mobile.'
-    s.description         = '[SportsMax]: Google free, deep, and broadly integrated analytics system designed specifically for mobile.'
-    s.homepage            = 'https://github.com/Digicel-Sportsmax/SMaxFirebaseAnalytics.git'
-    s.license             = 'MIT'
-    s.author              = { "Mohieddine Zarif" => "mohieddine.zarif@gotocme.com" }
-    s.source              = { :git => 'git@github.com:Digicel-Sportsmax/SMaxFirebaseAnalytics.git', :tag => s.version.to_s }
+  s.name  = "SMaxFirebaseAnalytics"
+  s.version = '0.0.4'
+  s.platform  = :ios, '10.0'
+  s.summary = '[SportsMax]: Google free, deep, and broadly integrated analytics system designed specifically for mobile.'
+  s.description = '[SportsMax]: Google free, deep, and broadly integrated analytics system designed specifically for mobile.'
+  s.homepage = 'https://github.com/Digicel-Sportsmax/SMaxFirebaseAnalytics.git'
+  s.license = 'CMPS'
+  s.author = { "Mohieddine Zarif" => "mohieddine.zarif@gotocme.com" }
+  s.source = { :git => 'git@github.com:Digicel-Sportsmax/SMaxFirebaseAnalytics.git', :tag => s.version.to_s }
+  s.requires_arc = true
+  s.static_framework = true
 
-    s.ios.deployment_target = "10.0"
-    s.platform            = :ios, '10.0'
-    s.requires_arc        = true
-    s.static_framework    = true
-    s.swift_version       = '5.0'
-
-    s.subspec 'Core' do |c|
-    c.frameworks = 'UIKit'
-    c.source_files = 'Classes/*.{swift,h,m}'
-    c.resources = ['Resources/*.{storyboard,xib,png,plist}']
-    c.dependency 'ZappPlugins'
-    c.dependency 'ApplicasterSDK'
-  end
+  s.public_header_files = '**/*.h'
+  s.source_files = 'Classes/*.{swift,h,m}', '"${PODS_ROOT}"/Firebase/**/*.{h}'
 
   s.xcconfig =  { 'CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES' => 'YES',
-                  'ENABLE_BITCODE' => 'YES',
-                  'SWIFT_VERSION' => '5.1'
-                }
+                          'FRAMEWORK_SEARCH_PATHS' => '$(inherited) "${PODS_ROOT}"/Firebase/**',
+                          'OTHER_LDFLAGS' => '$(inherited) -objc -framework "FirebaseCore" -framework "FirebaseInstanceID" -framework "FirebaseAnalytics"',
+                          'ENABLE_BITCODE' => 'YES',
+                          'SWIFT_VERSION' => '5.1',
+                          'USER_HEADER_SEARCH_PATHS' => '"$(inherited)" "${PODS_ROOT}"/Firebase/**'
+              }
 
-  s.default_subspec = 'Core'
-
+  s.dependency 'ZappAnalyticsPluginsSDK'
+  s.dependency 'Firebase'
+  s.dependency 'Firebase/Analytics'
 end
