@@ -1,7 +1,7 @@
 {
     "api": {
         "require_startup_execution": false,
-        "class_name": "SMaxFirebaseAnalytics",
+        "class_name": "SMaxFirebaseAnalytics.SMaxFirebaseAnalytics",
         "modules": []
     },
     "dependency_repository_url": [
@@ -10,15 +10,14 @@
     "platform": "ios",
     "author_name": "Mohieddine Zarif",
     "author_email": "mohieddine.zarif@gotocme.com",
-    "manifest_version": "0.0.3",
+    "manifest_version": "0.0.4",
     "name": "SMaxFirebaseAnalytics",
-    "description": "[SportsMax]: Google's free, deep, and broadly integrated analytics system designed specifically for mobile.",
+    "description": "SportsMax Firebase Analytics Plugin Integration",
     "type": "analytics",
     "identifier": "SMaxFirebaseAnalaytics",
     "ui_builder_support": true,
-    "screen": false,
     "dependency_name": "SMaxFirebaseAnalytics",
-    "dependency_version": "0.0.3",
+    "dependency_version": "0.0.4",
     "whitelisted_account_ids": [
         "5af949534da8f300080050f9"
     ],
@@ -27,13 +26,13 @@
     "unsupported_since_zapp_sdk": "",
     "react_native": false,
     "extra_dependencies": [],
-   "custom_configuration_fields": [
-    {
-      "type": "checkbox",
-      "key": "Send_User_Data",
-      "label": "Send User Data",
-      "default": 1,
-      "tooltip_text": "Sends any user data collected in the app. Per Google&apos;s policies, we will not send any user data identified as PII (Personally Identifiable Information)."
-    }
-  ]
+    "custom_configuration_fields": [
+        {
+          "type": "checkbox",
+          "key": "Send_User_Data",
+          "label": "Send User Data",
+          "default": 1,
+          "tooltip_text": "Sends any user data collected in the app. Per Google policies, we will not send any user data identified as PII (Personally Identifiable Information)."
+        }
+    ]
 }
