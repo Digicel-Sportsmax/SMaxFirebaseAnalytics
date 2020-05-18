@@ -1,0 +1,1 @@
+# SMaxFirebaseAnalytics
