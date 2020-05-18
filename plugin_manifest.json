@@ -10,14 +10,14 @@
     "platform": "ios",
     "author_name": "Mohieddine Zarif",
     "author_email": "mohieddine.zarif@gotocme.com",
-    "manifest_version": "0.0.4",
+    "manifest_version": "0.0.5",
     "name": "SMaxFirebaseAnalytics",
     "description": "SportsMax Firebase Analytics Plugin Integration",
     "type": "analytics",
     "identifier": "SMaxFirebaseAnalaytics",
     "ui_builder_support": true,
     "dependency_name": "SMaxFirebaseAnalytics",
-    "dependency_version": "0.0.4",
+    "dependency_version": "0.0.5",
     "whitelisted_account_ids": [
         "5af949534da8f300080050f9"
     ],

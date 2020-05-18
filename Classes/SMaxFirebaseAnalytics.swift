@@ -20,6 +20,9 @@ open class SMaxFirebaseAnalytics: ZPAnalyticsProvider, ZPPlayerAnalyticsProvider
     private var LEGENT : Dictionary<String, String> = [:]
     private var LEGENT_JSON : String = "{\" \":\"__\",\"_\":\"_0\",\"-\":\"_1\",\":\":\"_2\",\"'\":\"_3\",\".\":\"_4\",\",\":\"_5\",\"/\":\"_6\",\"\\\\\":\"_7\",\"(\":\"_8\",\")\":\"_A\",\"?\":\"_B\",\"\\\"\":\"_C\",\"!\":\"_D\",\"@\":\"_E\",\"#\":\"_F\",\"$\":\"_G\",\"%\":\"_H\",\"^\":\"_I\",\"&\":\"_J\",\"*\":\"_K\",\"=\":\"_M\",\"+\":\"_N\",\"~\":\"_L\",\"`\":\"_O\",\"|\":\"_P\",\";\":\"_Q\",\"[\":\"_R\",\"]\":\"_S\",\"}\":\"_T\",\"{\":\"_U\"}"
     
+    fileprivate let video_prefix = "(VOD)"
+    fileprivate let video_play_event = "VOD Item: Play was Triggered"
+    fileprivate let item_name_key = "Item Name"
     
     lazy var blacklistedEvents:[String] = {
         if let events = self.configurationJSON?["blacklisted_events"] as? String {
@@ -86,7 +89,17 @@ open class SMaxFirebaseAnalytics: ZPAnalyticsProvider, ZPPlayerAnalyticsProvider
     }
 
     open func trackEvent(_ eventName:String, parameters:[String:NSObject], model: Any?) {
-        // TODO: TRACK VIDEO PLAY
+        if eventName == self.video_play_event {
+            for param in parameters {
+                if param.key == self.item_name_key {
+                    let videoName = param.value
+                    let screenName = self.video_prefix + " " + (videoName as! String)
+                    let screenClass = classForCoder.description()
+                    Analytics.setScreenName(screenName, screenClass: screenClass)
+                    trackEvent(screenName, parameters: parameters)
+                }
+            }
+        }
     }
     
     override open func trackEvent(_ eventName:String, action:String, label:String, value:Int) {
