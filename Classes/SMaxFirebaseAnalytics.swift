@@ -242,7 +242,10 @@ open class SMaxFirebaseAnalytics: ZPAnalyticsProvider, ZPPlayerAnalyticsProvider
         if (returnValue.count > MAX_PARAM_NAME_CHARACTERS_LONG) {
             returnValue = String(returnValue[returnValue.startIndex..<returnValue.index(returnValue.startIndex, offsetBy: MAX_PARAM_NAME_CHARACTERS_LONG)])
         }
-        
+
+        returnValue = returnValue.replacingOccurrences(of: " ", with: "_")
+        returnValue = returnValue.replacingOccurrences(of: ":", with: "")
+
         return returnValue;
     }
     
