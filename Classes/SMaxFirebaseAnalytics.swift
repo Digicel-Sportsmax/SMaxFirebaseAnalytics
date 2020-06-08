@@ -100,6 +100,7 @@ open class SMaxFirebaseAnalytics: ZPAnalyticsProvider, ZPPlayerAnalyticsProvider
                 }
             }
         }
+        trackEvent(eventName, parameters: parameters)
     }
     
     override open func trackEvent(_ eventName:String, action:String, label:String, value:Int) {
