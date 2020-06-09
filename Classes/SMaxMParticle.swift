@@ -1,18 +1,18 @@
 //
-//  SMaxFirebaseAnalytics
-//  SMaxFirebaseAnalytics
+//  SMaxMParticle
+//  SMaxMParticle
 //
-//  Created by Mohieddine Zarif on 14/05/2020.
+//  Created by Mohieddine Zarif on 04/06/2020.
 //  Copyright © 2020 CME. All rights reserved.
 //
 
-import Firebase
 import ZappPlugins
 import ZappAnalyticsPluginsSDK
+import mParticle_BranchMetrics
 
 
-open class SMaxFirebaseAnalytics: ZPAnalyticsProvider, ZPPlayerAnalyticsProviderProtocol {
-        
+open class SMaxMParticle: ZPAnalyticsProvider, ZPPlayerAnalyticsProviderProtocol {
+
     public let MAX_PARAM_NAME_CHARACTERS_LONG  :Int = 40
     public let MAX_PARAM_VALUE_CHARACTERS_LONG :Int = 100
     public let FIREBASE_PREFIX : String = "Firebase_"
@@ -23,7 +23,13 @@ open class SMaxFirebaseAnalytics: ZPAnalyticsProvider, ZPPlayerAnalyticsProvider
     fileprivate let video_prefix = "(VOD)"
     fileprivate let video_play_event = "VOD Item: Play was Triggered"
     fileprivate let item_name_key = "Item Name"
-    
+    let eventDuration = "EVENT_DURATION"
+    fileprivate let MPARTCILE_KEY = "mparticle_key"
+    fileprivate let MPARTICLE_SECRET = "mparticle_secret"
+    fileprivate let SCREEN_VISIT_KEY = "screen_visit"
+    static var isAutoIntegrated: Bool = false
+    var timedEventDictionary: NSMutableDictionary?
+
     lazy var blacklistedEvents:[String] = {
         if let events = self.configurationJSON?["blacklisted_events"] as? String {
             return events.components(separatedBy: ";").filter { $0.isEmpty == false }.map { $0.lowercased() }
@@ -47,30 +53,76 @@ open class SMaxFirebaseAnalytics: ZPAnalyticsProvider, ZPPlayerAnalyticsProvider
         static let sendUserData = "Send_User_Data"
     }
     
-    override open func getKey() -> String {
-        return "firebase"
+    public required init() {
+        super.init()
+        self.configurationJSON = configurationJSON
+    }
+
+    public required init(configurationJSON: NSDictionary?) {
+        super.init()
+        self.configurationJSON = configurationJSON
+    }
+
+    
+    public override func createAnalyticsProvider(_ allProvidersSetting: [String : NSObject]) -> Bool {
+        return super.createAnalyticsProvider(allProvidersSetting)
     }
     
+    override open func getKey() -> String {
+        return "branchMParticle"
+    }
+    
+    
     override open func configureProvider() -> Bool {
-        initLegent()
-        if let path = Bundle.main.path(forResource: "GoogleService-Info",
-                                       ofType: "plist") {
-            if let plistDictionary = NSDictionary(contentsOfFile: path){
-                if  plistDictionary.allKeys.count > 0 {
-                    if (FirebaseApp.app() == nil) {
-                        FirebaseApp.configure()
-                        
-                        if let people = self.providerProperties[JsonKeys.sendUserData] as? String {
-                            self.isUserProfileEnabled = people.boolValue()
-                        }
-                    }
-                    
-                    return true
+        if !(SMaxMParticle.isAutoIntegrated) {
+            self.setupMParticle()
+        }
+        return SMaxMParticle.isAutoIntegrated
+    }
+    
+    fileprivate func setupMParticle() {
+        if let mParticleProdKey = self.configurationJSON?[self.MPARTCILE_KEY] as? String,
+            let mParticleProdSecret = self.configurationJSON?[self.MPARTCILE_KEY] as? String {
+                let options = MParticleOptions(key: mParticleProdKey,
+                                                     secret: mParticleProdSecret)
+                if let identityRequest = EventsLogger.sharedInstance.mParticleIdentity() {
+                    options.identifyRequest = identityRequest
                 }
-            }
+
+                #if PROD
+                options.environment = .production
+                #else
+                options.environment = .development
+                #endif
+                
+                MParticle.sharedInstance().start(with: options)
+                SMaxMParticle.isAutoIntegrated = true
+        }
+
+    }
+    
+    override open func trackEvent(_ eventName: String, parameters: [String : NSObject], completion: ((Bool, String?) -> Void)?) {
+        super.trackEvent(eventName, parameters: parameters)
+        var combinedParameters = ZPAnalyticsProvider.defaultProperties(self.defaultEventProperties, combinedWithEventParams: parameters)
+
+        let eventName = refactorParamName(eventName: eventName)
+        let event = MPEvent(name: eventName, type: MPEventType.navigation)
+        
+        if combinedParameters.isEmpty == true {
+            event?.customAttributes = nil
+        }
+        else {
+            combinedParameters = refactorEventParameters(parameters: combinedParameters)
+            event?.customAttributes = combinedParameters
         }
         
-        return false
+        if (event != nil) {
+            MParticle.sharedInstance().logEvent(event!)
+        }
+    }
+
+    public override func shouldTrackEvent(_ eventName: String) -> Bool {
+        return true
     }
     
     override open func trackEvent(_ eventName:String, parameters:[String:NSObject]) {
@@ -78,28 +130,23 @@ open class SMaxFirebaseAnalytics: ZPAnalyticsProvider, ZPPlayerAnalyticsProvider
         var combinedParameters = ZPAnalyticsProvider.defaultProperties(self.defaultEventProperties, combinedWithEventParams: parameters)
 
         let eventName = refactorParamName(eventName: eventName)
-
+        let event = MPEvent(name: eventName, type: MPEventType.navigation)
+        
         if combinedParameters.isEmpty == true {
-            Analytics.logEvent(eventName, parameters: nil)
+            event?.customAttributes = nil
         }
-        else{
+        else {
             combinedParameters = refactorEventParameters(parameters: combinedParameters)
-            Analytics.logEvent(eventName, parameters:combinedParameters)
+            event?.customAttributes = combinedParameters
+        }
+        
+        if (event != nil) {
+            MParticle.sharedInstance().logEvent(event!)
         }
     }
 
     open func trackEvent(_ eventName:String, parameters:[String:NSObject], model: Any?) {
-        if eventName == self.video_play_event {
-            for param in parameters {
-                if param.key == self.item_name_key {
-                    let videoName = param.value
-                    let screenName = self.video_prefix + " " + (videoName as! String)
-                    let screenClass = classForCoder.description()
-                    Analytics.setScreenName(screenName, screenClass: screenClass)
-                    trackEvent(screenName, parameters: parameters)
-                }
-            }
-        }
+        trackEvent(eventName, parameters: parameters)
     }
     
     override open func trackEvent(_ eventName:String, action:String, label:String, value:Int) {
@@ -135,43 +182,45 @@ open class SMaxFirebaseAnalytics: ZPAnalyticsProvider, ZPPlayerAnalyticsProvider
         }
     }
     
-    override open func trackEvent(_ eventName:String){
+    override open func trackEvent(_ eventName: String) {
         trackEvent(eventName, parameters: [String : NSObject]())
     }
     
     override open func endTimedEvent(_ eventName: String, parameters: [String : NSObject]) {
-        processEndTimedEvent(eventName, parameters: parameters)
+        if let timedEventDictionary = timedEventDictionary {
+            if let startDate = timedEventDictionary[eventName] as? Date {
+                let endDate = Date()
+                let elapsed = endDate.timeIntervalSince(startDate)
+                var params = parameters.count > 0 ? parameters : [String : NSObject]()
+                let durationInMilSec = NSString(format:"%f",elapsed * 1000)
+                params[eventDuration] = durationInMilSec
+                trackEvent(eventName, parameters: params)
+            }
+        }
     }
     
     override open func setUserProfile(genericUserProperties dictGenericUserProperties: [String : NSObject],
                                       piiUserProperties dictPiiUserProperties: [String : NSObject]) {
         if isUserProfileEnabled {
-            var firebaseParameters = [String : NSObject]()
+            var mParticleParameters = [String : NSObject]()
             for (key, value) in dictGenericUserProperties {
                 switch key {
                 case kUserPropertiesCreatedKey:
-                    firebaseParameters[UserProfile.created] = value
+                    mParticleParameters[UserProfile.created] = value
                 case kUserPropertiesiOSDevicesKey:
-                    firebaseParameters[UserProfile.iOSDevices] = value
+                    mParticleParameters[UserProfile.iOSDevices] = value
                 default:
-                    firebaseParameters[key] = value
+                    mParticleParameters[key] = value
                 }
             }
             
-            for (key, value) in firebaseParameters {
-                guard let value = value as? String else {
-                    continue
-                }
-                Analytics.setUserProperty(value, forName: key)
-            }
+            // TODO: update user identity
         }
     }
     
     public override func trackScreenView(_ screenName: String, parameters: [String : NSObject]) {
-        let screenClass = classForCoder.description()
-        // [START set_current_screen]
-        Analytics.setScreenName(screenName, screenClass: screenClass)
-        // [END set_current_screen]
+        let eventName = self.SCREEN_VISIT_KEY
+        trackEvent(eventName, parameters: parameters)
     }
     
     public func startTrackingPlayerEvents(forPlayer player: Any) {
@@ -242,6 +291,9 @@ open class SMaxFirebaseAnalytics: ZPAnalyticsProvider, ZPPlayerAnalyticsProvider
             returnValue = String(returnValue[returnValue.startIndex..<returnValue.index(returnValue.startIndex, offsetBy: MAX_PARAM_NAME_CHARACTERS_LONG)])
         }
         
+        returnValue = returnValue.replacingOccurrences(of: " ", with: "_")
+        returnValue = returnValue.replacingOccurrences(of: ":", with: "")
+
         return returnValue;
     }
     
@@ -268,10 +320,10 @@ open class SMaxFirebaseAnalytics: ZPAnalyticsProvider, ZPPlayerAnalyticsProvider
         if name.count > 0 {
             let send = name.index(name.startIndex, offsetBy: 1)
             let sendvalue = String(name[send..<name.endIndex])
-            if let prefix = LEGENT[name.getFirstCharacter! as String] {
+            if let prefix = LEGENT[name.mParticleGetFirstCharacter! as String] {
                 return prefix + recursiveEncodeAlphanumericCharacters( eventName: sendvalue)
             }else{
-                return name.getFirstCharacter! + recursiveEncodeAlphanumericCharacters( eventName: sendvalue)
+                return name.mParticleGetFirstCharacter! + recursiveEncodeAlphanumericCharacters( eventName: sendvalue)
             }
         }
         return ""
@@ -297,15 +349,16 @@ open class SMaxFirebaseAnalytics: ZPAnalyticsProvider, ZPPlayerAnalyticsProvider
                                                         piiUserProperties: [String : NSObject]) {
         
     }
+    
+    public override func setPushNotificationDeviceToken(_ deviceToken: Data) {
+        super.setPushNotificationDeviceToken(deviceToken)
+    }
+    
 }
 
 // TODO: Create a plugin for all extensions and utitlies
 extension String {
-    public var isNotAlphanumeric: Bool {
-        return  isEmpty || range(of: "[^a-zA-Z0-9{_}]", options: .regularExpression) != nil
-    }
-    
-    public var getFirstCharacter: String? {
+    public var mParticleGetFirstCharacter: String? {
         guard 0 < self.count else { return "" }
         let idx = index(startIndex, offsetBy: 0)
         return String(self[idx...idx])
