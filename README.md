@@ -1,2 +1,1 @@
 # SMaxFirebaseAnalytics
-# SMaxMParticle
